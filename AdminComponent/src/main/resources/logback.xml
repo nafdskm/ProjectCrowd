@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration debug="true">
+    <appender name="STDOUT"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--设置输出日志格式-->
+            <!--顺序分别是：时间、日志级别、线程名称、打印日志的类、日志主体内容、换行-->
+            <pattern>[%d{HH:mm:ss.SSS}] [%-5level] [%thread] [%logger] [%msg]%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--设置全局日志级别。日志级别按顺序分别是：DEBUG、INFO、WARN、ERROR-->
+    <root level="INFO">
+        <!--指定打印日志的appender-->
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <!--根据特殊需求指定局部日志级别-->
+    <logger name="com.skm.crowd.mapper" level="DEBUG" />
+
+</configuration>

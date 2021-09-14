@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        https://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <import resource="classpath:spring-persist-tx.xml"/>
+
+    <mvc:annotation-driven>
+        <!--@Responsebody返回中文异常处理-->
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes" value="text/plain;charset=UTF-8"/>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <context:component-scan base-package="com.skm.crowd.mvc"/>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--基于xml异常映射-->
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <prop key="java.lang.Exception">error/system-error</prop>
+                <prop key="com.skm.crowd.exception.AccessForbiddenException">admin-login</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--现由SpringSecurity进行权限控制-->
+    <!--注册拦截器
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/assign/**"/>
+            <mvc:mapping path="/admin/**"/>
+            <mvc:exclude-mapping path="/admin/to/login/page.do"/>
+            <mvc:exclude-mapping path="/admin/do/login.do"/>
+            <mvc:exclude-mapping path="/admin/do/logout.do"/>
+            <bean class="com.skm.crowd.mvc.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>-->
+
+    <!--配置view-Controller，直接把请求地址和视图名称关联起来-->
+    <mvc:view-controller path="/admin/to/login/page.do" view-name="admin-login"/> <!--登录页面-->
+    <mvc:view-controller path="/admin/to/main/page.do" view-name="admin-main"/> <!--控制页面-->
+    <mvc:view-controller path="/admin/add/page.do" view-name="admin-add"/>  <!--用户添加页面-->
+    <mvc:view-controller path="/admin/edit/page.do" view-name="admin-edit"/>  <!--用户修改页面-->
+    <mvc:view-controller path="/admin/role/get/page.do" view-name="role-page"/> <!--角色维护页面-->
+    <mvc:view-controller path="/admin/menu/page.do" view-name="menu-page"/> <!--菜单维护页面-->
+
+</beans>

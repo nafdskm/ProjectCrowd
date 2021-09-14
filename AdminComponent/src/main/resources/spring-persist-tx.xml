@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <import resource="spring-persist-mybatis.xml" />
+
+    <context:component-scan base-package="com.skm.crowd.service" />
+
+    <!--配置事务管理器-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!--配置事务通知-->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!--查询方法设置为只读-->
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="query*" read-only="true"/>
+            <tx:method name="count*" read-only="true"/>
+
+            <!--增删改方法：配置事务传播行为、回滚异常-->
+            <!--
+                propagation属性（设置事务的传播行为）
+                    REQUIRED：默认值，表示当前方法必须工作在事务中，如果当前线程上没有开启的事务，则自己开启一个新事务。如有，则用。
+                        缺点：用别人的事物有可能，被迫回滚
+                    REQUIRES_NEW：表示当前方法必须工作在事务中，始终开启新事务。
+                rollback-for属性（设置事务方法针对什么异常进行回滚）
+                    默认是只针对运行时异常，建议针对所有异常
+            -->
+            <tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+            <tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+            <tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+            <tx:method name="batch*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--配置事务切面-->
+    <aop:config>
+        <!--
+            避免SpringSecurity中UserDetailsService类一块被扫描进事务切面，针对实现类进行扫描
+            (public String) com.skm.crowd.service.AdminServiceImpl.save(Admin)
+                   *         *       ..               *ServiceImpl.*(..)
+        -->
+        <aop:pointcut id="txPointcut" expression="execution(* *..*ServiceImpl.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut" />
+
+    </aop:config>
+
+</beans>
